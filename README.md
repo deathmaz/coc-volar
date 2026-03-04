@@ -16,7 +16,7 @@
 
 ## Note
 
-- `coc-volar` version `v0.35.0` and later uses `vue-language-server` version `v2.x.x`. If you have `coc-typescript-vue-plugin` installed, please uninstall it as it will cause conflicts and errors.
+- `coc-volar` version `v0.38.0` and later uses `vue-language-server` version `v3.x.x`. If you have `coc-typescript-vue-plugin` installed, please uninstall it as it will cause conflicts and errors.
   - `:CocUninstall @yaegassy/coc-typescript-vue-plugin`
 - To utilize various language features such as `IntelliSense`, `Diagnostics`, and more in the `<script>` blocks of `Vue` files, you need to install either `coc-tsserver` or `coc-tsserver-dev`.
   - `:CocInstall coc-tsserver` or `:CocInstall coc-tsserver-dev`
@@ -79,13 +79,15 @@ autocmd Filetype vue setlocal iskeyword+=-
 - `vue.trace.server`: Traces the communication between coc.nvim and the language server, valid option: `["off", "messages", "verbose"]`, default: `"off"`
 - `vue.server.path`: Custom path to volar server module, `~` and `$HOME` can also be used. If there is no setting, the built-in module will be used, default: `null`
 - `vue.server.maxOldSpaceSize`: Set `--max-old-space-size` option on server process. If you have problem on frequently `"Request textDocument/** failed."` error, try setting higher memory(MB) on it, default: `null`
-- `vue.codeActions.enabled`: Enabled code actions, default: `true`
-- `vue.codeLens.enabled`: Enabled code lens, default: `true`
-- `vue.complete.casing.tags`: Preferred tag name case, valid options: `["autoKebab", "autoPascal", "kebab", "pascal"]`, default: `"autoPascal"`
-- `vue.complete.casing.props`: Preferred attr name case, valid options: `["autoKebab", "autoCamel", "kebab", "camel"]`, default: `"autoKebab"`
-- `vue.complete.defineAssignment`: Auto add `const props = ` before `defineProps` when selecting the completion item `props`. (also `emit` and `slots`), default: `true`
+- `vue.codeActions.askNewComponentName`: Prompt for new component name when extracting component, default: `true`
+- `vue.hover.rich`: Enable rich hover information for components showing props, slots, and events, default: `false`
+- `vue.suggest.componentNameCasing`: Preferred tag name case, valid options: `["preferPascalCase", "preferKebabCase", "pascalCase", "kebabCase"]`, default: `"preferPascalCase"`
+- `vue.suggest.propNameCasing`: Preferred attr name case, valid options: `["preferKebabCase", "preferCamelCase", "kebabCase", "camelCase"]`, default: `"preferKebabCase"`
+- `vue.suggest.defineAssignment`: Auto add `const props = ` before `defineProps` when selecting the completion item `props`. (also `emit` and `slots`), default: `true`
+- `vue.autoInsert.dotValue`: Auto-insert `.value` when accessing ref variables, default: `false`
+- `vue.autoInsert.bracketSpacing`: Auto-insert spaces inside template interpolation brackets `{{ }}`, default: `true`
 - `vue.inlayHints.destructuredProps`: Show inlay hints for destructured props, default: `false`
-- `vue.inlayHints.missingProps`: Show inlay hints for missing required props, `false`
+- `vue.inlayHints.missingProps`: Show inlay hints for missing required props, default: `false`
 - `vue.inlayHints.inlineHandlerLeading`: Show inlay hints for event argument in inline handlers, default: `false`
 - `vue.inlayHints.optionsWrapper`: Show inlay hints for component options wrapper for type support, default: `false`
 - `vue.inlayHints.vBindShorthand`: Show inlay hints for v-bind shorthand, default: `false`
@@ -99,6 +101,10 @@ autocmd Filetype vue setlocal iskeyword+=-
 Other major LSP feature are of course supported as well.
 
 > completion, definition, typeDefinition, diagnostics, hover, signatureHelp, references, codeLens, formatting, rename and more...
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for release notes and migration guides.
 
 ## Thanks
 

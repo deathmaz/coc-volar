@@ -57,7 +57,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     if (tsService) await tsService.start();
   }
 
-  return commonActivate(context, (id, name, documentSelector, initOptions, port, outputChannel) => {
+  return commonActivate(context, (id, name, documentSelector, tsdk, port, outputChannel) => {
     class _LanguageClient extends LanguageClient {
       fillInitializeParams(params: InitializeParams) {
         (params as any).locale = workspace.getConfiguration('volar').get<string>('tsLocale', 'en');
@@ -80,22 +80,24 @@ export async function activate(context: ExtensionContext): Promise<void> {
     }
 
     const debugOptions = { execArgv: ['--nolazy', '--inspect=' + port] };
+    const tsdkArgs = ['--tsdk=' + tsdk];
     const serverOptions: ServerOptions = {
       run: {
         module: serverModule,
         transport: TransportKind.ipc,
+        args: tsdkArgs,
         options: runOptions,
       },
       debug: {
         module: serverModule,
         transport: TransportKind.ipc,
+        args: tsdkArgs,
         options: debugOptions,
       },
     };
 
     const clientOptions: LanguageClientOptions = {
       documentSelector: documentSelector,
-      initializationOptions: initOptions,
       progressOnInitialization: !getConfigDisableProgressNotifications(),
       disabledFeatures: getDisabledFeatures(),
       middleware: {

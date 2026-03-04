@@ -25,7 +25,7 @@
     "access": "public"
   },
   "scripts": {
-    "schema": "curl -o schemas/vue-tsconfig.schema.json https://raw.githubusercontent.com/vuejs/language-tools/master/packages/language-core/schemas/vue-tsconfig.schema.json",
+    "schema": "curl -o schemas/vue-tsconfig.schema.json https://raw.githubusercontent.com/vuejs/language-tools/master/extensions/vscode/schemas/vue-tsconfig.schema.json",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext ts",
     "clean": "rimraf lib",
@@ -205,7 +205,8 @@
             "Enable TypeScript Plugin/Hybrid Mode.",
             "Disable TypeScript Plugin/Hybrid Mode."
           ],
-          "description": "Vue language server only handles CSS and HTML language support, and tsserver takes over TS language support via TS plugin."
+          "description": "(Deprecated in v3: always enabled) Vue language server only handles CSS and HTML language support, and tsserver takes over TS language support via TS plugin.",
+          "deprecationMessage": "Hybrid mode is always enabled in @vue/language-server v3. This setting is ignored."
         },
         "vue.server.includeLanguages": {
           "type": "array",
@@ -224,40 +225,40 @@
           "default": null,
           "description": "Set --max-old-space-size option on server process. If you have problem on frequently \"Request textDocument/** failed.\" error, try setting higher memory(MB) on it."
         },
-        "vue.codeActions.enabled": {
+        "vue.codeActions.askNewComponentName": {
           "type": "boolean",
           "default": true,
-          "description": "Enabled code actions."
+          "description": "Prompt for new component name when extracting component."
         },
-        "vue.codeLens.enabled": {
+        "vue.hover.rich": {
           "type": "boolean",
-          "default": true,
-          "description": "Enabled code lens."
+          "default": false,
+          "description": "Enable rich hover information for components showing props, slots, and events."
         },
-        "vue.complete.casing.tags": {
+        "vue.suggest.componentNameCasing": {
           "type": "string",
           "enum": [
-            "autoKebab",
-            "autoPascal",
-            "kebab",
-            "pascal"
+            "preferPascalCase",
+            "preferKebabCase",
+            "pascalCase",
+            "kebabCase"
           ],
           "enumDescriptions": [
+            "Auto Detect from Content (Fallback to <PascalCase> if detect failed)",
             "Auto Detect from Content (Fallback to <kebab-case> if detect failed)",
-            "Auto Detect from Content  (Fallback to <PascalCase> if detect failed)",
-            "<kebab-case>",
-            "<PascalCase>"
+            "<PascalCase>",
+            "<kebab-case>"
           ],
-          "default": "autoPascal",
+          "default": "preferPascalCase",
           "description": "Preferred tag name case."
         },
-        "vue.complete.casing.props": {
+        "vue.suggest.propNameCasing": {
           "type": "string",
           "enum": [
-            "autoKebab",
-            "autoCamel",
-            "kebab",
-            "camel"
+            "preferKebabCase",
+            "preferCamelCase",
+            "kebabCase",
+            "camelCase"
           ],
           "enumDescriptions": [
             "Auto Detect from Content (Fallback to :kebab-case=\"...\" if detect failed)",
@@ -265,13 +266,23 @@
             ":kebab-case=\"...\"",
             ":camelCase=\"...\""
           ],
-          "default": "autoKebab",
+          "default": "preferKebabCase",
           "description": "Preferred attr name case."
         },
-        "vue.complete.defineAssignment": {
+        "vue.suggest.defineAssignment": {
           "type": "boolean",
           "default": true,
           "description": "Auto add `const props = ` before `defineProps` when selecting the completion item `props`. (also `emit` and `slots`)"
+        },
+        "vue.autoInsert.dotValue": {
+          "type": "boolean",
+          "default": false,
+          "description": "Auto-insert `.value` when accessing ref variables."
+        },
+        "vue.autoInsert.bracketSpacing": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-insert spaces inside template interpolation brackets `{{ }}`."
         },
         "vue.inlayHints.destructuredProps": {
           "type": "boolean",
@@ -302,13 +313,42 @@
           "type": "boolean",
           "default": true
         },
+        "vue.format.template.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable template formatting."
+        },
         "vue.format.style.initialIndent": {
           "type": "boolean",
           "default": false
         },
+        "vue.format.style.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable style formatting."
+        },
         "vue.format.script.initialIndent": {
           "type": "boolean",
           "default": false
+        },
+        "vue.format.script.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable script formatting."
+        },
+        "vue.format.wrapAttributes": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "force",
+            "force-aligned",
+            "force-expand-multiline",
+            "aligned-multiple",
+            "preserve",
+            "preserve-aligned"
+          ],
+          "default": "auto",
+          "description": "Attribute wrapping strategy for templates."
         },
         "vetur.enable": {
           "type": "boolean",
@@ -340,8 +380,8 @@
     ]
   },
   "dependencies": {
-    "@vue/language-server": "2.2.8",
-    "@vue/typescript-plugin": "2.2.8",
+    "@vue/language-server": "3.2.5",
+    "@vue/typescript-plugin": "3.2.5",
     "typescript": "5.3.3"
   },
   "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"

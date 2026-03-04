@@ -6,31 +6,22 @@ export const config = {
   get server(): Readonly<{
     path: null | string;
     includeLanguages: string[];
-    //hybridMode: 'auto' | 'typeScriptPluginOnly' | boolean;
     hybridMode: boolean;
     maxOldSpaceSize: number;
   }> {
     return _config().get('server')!;
   },
   get codeActions(): Readonly<{
-    enabled: boolean;
-    savingTimeLimit: number;
+    askNewComponentName: boolean;
   }> {
     return _config().get('codeActions')!;
   },
-  get codeLens(): Readonly<{
-    enabled: boolean;
+  get suggest(): Readonly<{
+    componentNameCasing: 'preferPascalCase' | 'preferKebabCase' | 'pascalCase' | 'kebabCase';
+    propNameCasing: 'preferKebabCase' | 'preferCamelCase' | 'kebabCase' | 'camelCase';
+    defineAssignment: boolean;
   }> {
-    return _config().get('codeLens')!;
-  },
-  get complete(): Readonly<{
-    casing: {
-      status: boolean;
-      props: 'autoKebab' | 'autoCamel' | 'kebab' | 'camel';
-      tags: 'autoKebab' | 'autoPascal' | 'kebab' | 'pascal';
-    };
-  }> {
-    return _config().get('complete')!;
+    return _config().get('suggest')!;
   },
 };
 
@@ -63,12 +54,6 @@ export function getDisabledFeatures() {
     disabledFeatures.push('formatting');
     disabledFeatures.push('documentFormatting');
     disabledFeatures.push('documentRangeFormatting');
-  }
-  if (!config.codeActions.enabled) {
-    disabledFeatures.push('codeAction');
-  }
-  if (!config.codeLens.enabled) {
-    disabledFeatures.push('codeLens');
   }
   if (getConfigDisableProgressNotifications()) {
     disabledFeatures.push('progress');

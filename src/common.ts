@@ -5,17 +5,14 @@ import {
   OutputChannel,
   Thenable,
   commands,
+  services,
   window,
   workspace,
 } from 'coc.nvim';
 
-import { VueInitializationOptions } from '@vue/language-server';
-
 import * as doctor from './client/commands/doctor';
 import * as scaffoldSnippets from './client/completions/scaffoldSnippets';
 import * as tsVersion from './features/tsVersion';
-
-import { config } from './config';
 
 let client: LanguageClient;
 
@@ -23,7 +20,7 @@ type CreateLanguageClient = (
   id: string,
   name: string,
   langs: DocumentFilter[],
-  initOptions: VueInitializationOptions,
+  tsdk: string,
   port: number,
   outputChannel: OutputChannel,
 ) => LanguageClient;
@@ -70,20 +67,18 @@ export async function activate(context: ExtensionContext, createLc: CreateLangua
   );
 }
 
-export const enabledHybridMode = config.server.hybridMode;
-
 export async function doActivate(context: ExtensionContext, createLc: CreateLanguageClient) {
   initializeWorkspaceState(context);
 
+  if (!resolveCurrentTsPaths) {
+    resolveCurrentTsPaths = tsVersion.getCurrentTsPaths(context);
+    context.workspaceState.update('coc-volar-tsdk-path', resolveCurrentTsPaths.tsdk);
+  }
+
   const outputChannel = window.createOutputChannel('Vue Language Server');
-  client = createLc(
-    'vue',
-    'Vue',
-    getDocumentSelector(),
-    await getInitializationOptions(context, enabledHybridMode),
-    6009,
-    outputChannel,
-  );
+  client = createLc('vue', 'Vue', getDocumentSelector(), resolveCurrentTsPaths.tsdk, 6009, outputChannel);
+
+  setupTsServerRequestForwarding(client);
 
   activateRestartRequest();
 
@@ -99,8 +94,6 @@ export async function doActivate(context: ExtensionContext, createLc: CreateLang
 
         outputChannel.clear();
 
-        client.clientOptions.initializationOptions = await getInitializationOptions(context, enabledHybridMode);
-
         await client.start();
       }),
     );
@@ -111,10 +104,6 @@ export function deactivate(): Thenable<any> | undefined {
   return client?.stop();
 }
 
-export function takeOverModeEnabled() {
-  return !!workspace.getConfiguration('volar').get<boolean>('takeOverMode.enabled');
-}
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function getDocumentSelector(): DocumentFilter[] {
   const selectors: DocumentFilter[] = [];
@@ -123,21 +112,40 @@ export function getDocumentSelector(): DocumentFilter[] {
   return selectors;
 }
 
-async function getInitializationOptions(
-  context: ExtensionContext,
-  hybridMode: boolean,
-): Promise<VueInitializationOptions> {
-  if (!resolveCurrentTsPaths) {
-    resolveCurrentTsPaths = tsVersion.getCurrentTsPaths(context);
-    context.workspaceState.update('coc-volar-tsdk-path', resolveCurrentTsPaths.tsdk);
-  }
+function setupTsServerRequestForwarding(vueClient: LanguageClient) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let cachedServiceClient: any = null;
 
-  return {
-    typescript: resolveCurrentTsPaths,
-    vue: {
-      hybridMode,
-    },
+  const getServiceClient = () => {
+    const tsService = services.getService('tsserver');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (tsService as any)?.clientHost?.serviceClient;
   };
+
+  vueClient.onNotification('tsserver/request', async ([seq, command, args]: [number, string, any]) => {
+    try {
+      if (!cachedServiceClient) {
+        cachedServiceClient = getServiceClient();
+      }
+      if (!cachedServiceClient) {
+        vueClient.sendNotification('tsserver/response', [seq, undefined]);
+        return;
+      }
+
+      const results = cachedServiceClient.executeImpl(command, args, {
+        isAsync: true,
+        expectsResult: true,
+        lowPriority: true,
+      });
+
+      const result = await results[0];
+      vueClient.sendNotification('tsserver/response', [seq, result?.body]);
+    } catch (e) {
+      console.error('[coc-volar] tsserver request forwarding error:', e);
+      cachedServiceClient = null;
+      vueClient.sendNotification('tsserver/response', [seq, undefined]);
+    }
+  });
 }
 
 function initializeWorkspaceState(context: ExtensionContext) {
