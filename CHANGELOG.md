@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.38.1
+
+- Update `@vue/language-server` to 3.2.6
+- Update `@vue/typescript-plugin` to 3.2.6
+
 ## v0.38.0
 
 ### Breaking: Upgraded to `@vue/language-server` v3.2.5
